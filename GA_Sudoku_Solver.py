@@ -5,7 +5,9 @@ from past.builtins import range
 
 random.seed()
 
-Nd = 9  # Number of digits (in the case of standard Sudoku puzzles, this is 9x9).
+# Number of digits (in the case of standard Sudoku puzzles, this is 9x9).
+Nd = 9
+
 
 class Population(object):
     """ A set of candidate solutions to the Sudoku puzzle.
@@ -29,7 +31,8 @@ class Population(object):
                         helper.values[row][column].append(value)
                     elif given.values[row][column] != 0:
                         # Given/known value from file.
-                        helper.values[row][column].append(given.values[row][column])
+                        helper.values[row][column].append(
+                            given.values[row][column])
                         break
 
         # Seed a new population.
@@ -46,7 +49,8 @@ class Population(object):
                         row[j] = given.values[i][j]
                     # Fill in the gaps using the helper board.
                     elif given.values[i][j] == 0:
-                        row[j] = helper.values[i][j][random.randint(0, len(helper.values[i][j]) - 1)]
+                        row[j] = helper.values[i][j][random.randint(
+                            0, len(helper.values[i][j]) - 1)]
 
                 # If we don't have a valid board, then try again. max iteration 500,000
                 # There must be no duplicates in the row.
@@ -57,7 +61,8 @@ class Population(object):
                         return 0
                     for j in range(0, Nd):
                         if given.values[i][j] == 0:
-                            row[j] = helper.values[i][j][random.randint(0, len(helper.values[i][j]) - 1)]
+                            row[j] = helper.values[i][j][random.randint(
+                                0, len(helper.values[i][j]) - 1)]
 
                 g.values[i] = row
             # print(g.values)
@@ -79,8 +84,10 @@ class Population(object):
 
     def sort(self):
         """ Sort the population based on fitness. """
-        self.candidates = sorted(self.candidates, key=operator.attrgetter('fitness'))
+        self.candidates = sorted(
+            self.candidates, key=operator.attrgetter('fitness'))
         return
+
 
 class Candidate(object):
     """ A candidate solutions to the Sudoku puzzle. """
@@ -222,7 +229,7 @@ class Fixed(Candidate):
             or (self.values[i + 1][j + 2] == value)
             or (self.values[i + 2][j] == value)
             or (self.values[i + 2][j + 1] == value)
-            or (self.values[i + 2][j + 2] == value)):
+                or (self.values[i + 2][j + 2] == value)):
             return True
         else:
             return False
@@ -241,7 +248,8 @@ class Fixed(Candidate):
                 if self.values[row][col] != 0:
 
                     cnt1 = list(self.values[row]).count(self.values[row][col])
-                    cnt2 = list(self.values[:,col]).count(self.values[row][col])
+                    cnt2 = list(self.values[:, col]).count(
+                        self.values[row][col])
 
                     block_values = [y[self.make_index(col):self.make_index(col)+3] for y in
                                     self.values[self.make_index(row):self.make_index(row)+3]]
@@ -251,6 +259,7 @@ class Fixed(Candidate):
                     if cnt1 > 1 or cnt2 > 1 or cnt3 > 1:
                         return False
         return True
+
 
 class Tournament(object):
     """ The crossover function requires two parents to be selected from the population pool. The Tournament class is used to do this.
@@ -324,7 +333,8 @@ class CycleCrossover(object):
                 crossover_point2 = temp
 
             for i in range(crossover_point1, crossover_point2):
-                child1.values[i], child2.values[i] = self.crossover_rows(child1.values[i], child2.values[i])
+                child1.values[i], child2.values[i] = self.crossover_rows(
+                    child1.values[i], child2.values[i])
 
         return child1, child2
 
@@ -335,7 +345,8 @@ class CycleCrossover(object):
         remaining = range(1, Nd + 1)
         cycle = 0
 
-        while ((0 in child_row1) and (0 in child_row2)):  # While child rows not complete...
+        # While child rows not complete...
+        while ((0 in child_row1) and (0 in child_row2)):
             if (cycle % 2 == 0):  # Even cycles.
                 # Assign next unused value.
                 index = self.find_unused(row1, remaining)
@@ -392,13 +403,18 @@ class Sudoku(object):
         return
 
     def load(self, p):
-        #values = np.array(list(p.replace(".","0"))).reshape((Nd, Nd)).astype(int)
+        # values = np.array(list(p.replace(".","0"))).reshape((Nd, Nd)).astype(int)
         self.given = Fixed(p)
         return
 
     def solve(self):
+        # Number of candidates (i.e. population size).
+        # Nc = 100
+        # Nc = 500
+        Nc = 1000
+        # Nc = 5000
+        # Nc = 20000
 
-        Nc = 1000  # Number of candidates (i.e. population size).
         Ne = int(0.05 * Nc)  # Number of elites.
         Ng = 10000  # Number of generations.
         Nm = 0  # Number of mutations.
@@ -406,7 +422,10 @@ class Sudoku(object):
         # Mutation parameters.
         phi = 0
         sigma = 1
+        # mutation_rate = 0.01
         mutation_rate = 0.06
+        # mutation_rate = 0.1
+        # mutation_rate = 0.5
 
         # Check given one first
         if self.given.no_duplicates() == False:
@@ -415,7 +434,7 @@ class Sudoku(object):
         # Create an initial population.
         self.population = Population()
         print("create an initial population.")
-        if self.population.seed(Nc, self.given) ==  1:
+        if self.population.seed(Nc, self.given) == 1:
             pass
         else:
             return (-1, 1)
@@ -423,23 +442,29 @@ class Sudoku(object):
         # For up to 10000 generations...
         stale = 0
         for generation in range(0, Ng):
+            average = 0
 
             # Check for a solution.
             best_fitness = 0.0
-            #best_fitness_population_values = self.population.candidates[0].values
+            # best_fitness_population_values = self.population.candidates[0].values
             for c in range(0, Nc):
+                average += self.population.candidates[c].fitness
                 fitness = self.population.candidates[c].fitness
                 if (fitness == 1):
-                    print("Solution found at generation %d!" % generation)
+                    average /= Nc
+                    print("Solution found at generation ", generation,
+                          "!, Last population fitness average: ", average, " Best fitness: ", fitness)
                     return (generation, self.population.candidates[c])
 
                 # Find the best fitness and corresponding chromosome
                 if (fitness > best_fitness):
                     best_fitness = fitness
-                    #best_fitness_population_values = self.population.candidates[c].values
+                    # best_fitness_population_values = self.population.candidates[c].values
 
-            print("Generation:", generation, " Best fitness:", best_fitness)
-            #print(best_fitness_population_values)
+            average /= Nc
+            print("Generation:", generation, " Best fitness:",
+                  best_fitness, " Average fitness:", average)
+            # print(best_fitness_population_values)
 
             # Create the next population.
             next_population = []
@@ -459,9 +484,10 @@ class Sudoku(object):
                 parent1 = t.compete(self.population.candidates)
                 parent2 = t.compete(self.population.candidates)
 
-                ## Cross-over.
+                # Cross-over.
                 cc = CycleCrossover()
-                child1, child2 = cc.crossover(parent1, parent2, crossover_rate=1.0)
+                child1, child2 = cc.crossover(
+                    parent1, parent2, crossover_rate=1.0)
 
                 # Mutate child1.
                 child1.update_fitness()
@@ -470,7 +496,8 @@ class Sudoku(object):
                 child1.update_fitness()
                 if (success):
                     Nm += 1
-                    if (child1.fitness > old_fitness):  # Used to calculate the relative success rate of mutations.
+                    # Used to calculate the relative success rate of mutations.
+                    if (child1.fitness > old_fitness):
                         phi = phi + 1
 
                 # Mutate child2.
@@ -480,7 +507,8 @@ class Sudoku(object):
                 child2.update_fitness()
                 if (success):
                     Nm += 1
-                    if (child2.fitness > old_fitness):  # Used to calculate the relative success rate of mutations.
+                    # Used to calculate the relative success rate of mutations.
+                    if (child2.fitness > old_fitness):
                         phi = phi + 1
 
                 # Add children to new population.
@@ -507,7 +535,8 @@ class Sudoku(object):
             elif (phi < 0.2):
                 sigma = sigma * 0.998
 
-            mutation_rate = abs(np.random.normal(loc=0.0, scale=sigma, size=None))
+            mutation_rate = abs(np.random.normal(
+                loc=0.0, scale=sigma, size=None))
 
             # Check for stale population.
             self.population.sort()

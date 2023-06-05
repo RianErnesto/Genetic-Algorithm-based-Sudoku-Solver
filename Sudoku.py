@@ -14,29 +14,30 @@ class SudokuGUI(Frame):
 
         Frame.__init__(self, master)
         if master:
-            master.title("SudokuGUI")
+            master.title("Sudoku Solver")
 
         self.grid = [[0 for x in range(9)] for y in range(9)]
         self.locked = []
         self.easy, self.medium, self.hard, self.expert = [], [], [], []
         self.load_db(file)
-        self.make_grid()
         self.bframe = Frame(self)
+        Label(self.bframe, text="Zenith Sudoku Solver", font="Times 24", foreground="#7327BB").pack(anchor=S)
+        self.make_grid()
         #bframe = Frame(self)
 
         # select game difficult level
         self.lvVar = StringVar()
         self.lvVar.set("")
         difficult_level = ["Easy","Medium","Hard","Expert"]
-        Label(self.bframe, text="Please select difficult level:", font="Times 18 underline").pack(anchor=S)
+        Label(self.bframe, text="Difficult Level:", font="Times 18").pack(anchor=S)
         for l in difficult_level:
             Radiobutton(self.bframe, text=l, width=20, variable=self.lvVar, value=l)\
                 .pack(anchor=S)
         # generate new game
-        self.ng = Button(self.bframe, text='Generate New Game', width=20, command=self.new_game)\
+        self.ng = Button(self.bframe, text='Generate New Board', width=20, command=self.new_game)\
             .pack(anchor=S)
         # solver
-        self.sg = Button(self.bframe, text='Solver', width=20, command=self.solver).pack(anchor=S)
+        self.sg = Button(self.bframe, text='Solve Board', width=20, command=self.solver).pack(anchor=S)
 
         self.bframe.pack(side='bottom', fill='x', expand='1')
         self.pack()
@@ -90,7 +91,7 @@ class SudokuGUI(Frame):
 
     def make_grid(self):
         ( w,h ) = (256,256)
-        c = Canvas(self, bg=self.rgb(128,128,128), width=2*w, height=h)
+        c = Canvas(self, bg=self.rgb(115,39,187), width=2*w, height=h)
         c.pack(side='top', fill='both', expand='1')
 
         self.rects = [[None for x in range(18)] for y in range(18)]
@@ -103,10 +104,10 @@ class SudokuGUI(Frame):
                 (xr, yr) = (x*guidesize, y*guidesize)
                 if x < 3:
                     self.rects[y][x] = c.create_rectangle(xr, yr, xr+guidesize,
-                                                      yr+guidesize, width=4, fill='yellow')
+                                                      yr+guidesize, width=4, fill='white')
                 else:
                     self.rects[y][x] = c.create_rectangle(xr, yr, xr+guidesize,
-                                                      yr+guidesize, width=4, fill='gray')
+                                                      yr+guidesize, width=4, fill='#7327BB')
                 (xr, yr) = (x*rsize, y*rsize)
                 r = c.create_rectangle(xr, yr, xr+rsize, yr+rsize)
                 t = c.create_text(xr + rsize / 2, yr + rsize / 2)

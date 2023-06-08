@@ -5,6 +5,7 @@ import numpy as np
 from tkinter import *
 from tkinter.ttk import *
 import GA_Sudoku_Solver as gss
+import matplotlib.pyplot as plt
 
 random.seed(time.time())
 

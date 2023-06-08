@@ -2,6 +2,7 @@ import numpy as np
 import random
 import operator
 from past.builtins import range
+import matplotlib.pyplot as plt
 
 random.seed()
 
@@ -408,24 +409,24 @@ class Sudoku(object):
         return
 
     def solve(self):
+
         # Number of candidates (i.e. population size).
-        # Nc = 100
-        # Nc = 500
         Nc = 1000
-        # Nc = 5000
-        # Nc = 20000
 
         Ne = int(0.05 * Nc)  # Number of elites.
         Ng = 10000  # Number of generations.
         Nm = 0  # Number of mutations.
 
+        generationsX = []
+        bestFitnessY = []
+        averageFitnessY = []
+        plt.ion()
+        plt.figure(facecolor="#7327BB")
+
         # Mutation parameters.
         phi = 0
         sigma = 1
-        # mutation_rate = 0.01
         mutation_rate = 0.06
-        # mutation_rate = 0.1
-        # mutation_rate = 0.5
 
         # Check given one first
         if self.given.no_duplicates() == False:
@@ -442,6 +443,7 @@ class Sudoku(object):
         # For up to 10000 generations...
         stale = 0
         for generation in range(0, Ng):
+            generationsX.append(generation)
             average = 0
 
             # Check for a solution.
@@ -450,6 +452,7 @@ class Sudoku(object):
             for c in range(0, Nc):
                 average += self.population.candidates[c].fitness
                 fitness = self.population.candidates[c].fitness
+
                 if (fitness == 1):
                     average /= Nc
                     print("Solution found at generation ", generation,
@@ -462,9 +465,19 @@ class Sudoku(object):
                     # best_fitness_population_values = self.population.candidates[c].values
 
             average /= Nc
+            bestFitnessY.append(best_fitness)
+            averageFitnessY.append(average)
             print("Generation:", generation, " Best fitness:",
                   best_fitness, " Average fitness:", average)
             # print(best_fitness_population_values)
+            plt.clf()
+            plt.xlabel("Generation", fontsize=16)
+            plt.ylabel("Fitness", fontsize=16)
+            plt.title("Sudoku Solver Analytics", fontsize=20)
+            plt.plot(generationsX, bestFitnessY, "-k", label="Best Fitness")
+            plt.plot(generationsX, averageFitnessY, "-r", label="Average Fitness")
+            plt.legend()
+            plt.pause(0.0001)
 
             # Create the next population.
             next_population = []
